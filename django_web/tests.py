@@ -6,11 +6,23 @@ from itchat.content import *
 import os
 import threading
 import json
+from queue import Queue
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-picDir=os.path.join(BASE_DIR,'static\images\qrcode.jpg')
+picDir = os.path.join(BASE_DIR,'static\wx_files\qrcode.jpg')
+loginDir = os.path.join(BASE_DIR,'static\ix_files\itchat.pkl')
 
-def logout():
+q = Queue(maxsize=100)
+
+if_login = False
+if_run = False
+qr_uuid = None
+
+def login(if_login):
+    if_login = True
+
+def logout(if_run):
+    if_run = True
     itchat.logout()
 
 def qrcb(uuid=None, status=None, qrcode=None):
@@ -56,31 +68,42 @@ def login():
 
     print('-------get login success')
     #保存登陆状态
-    itchat.dump_login_status()
+    itchat.dump_login_status(fileDir=loginDir)
     #获取登陆人信息
     userInfo = itchat.web_init()
     print('Login successfully as %s' % userInfo['User']['NickName'])
+
     #手机web微信登陆状态显示
     itchat.show_mobile_login()
     print('-------show mobile login')
+
     #获取最新近聊列表
-    itchat.get_contact()
+    itchat.get_contact(update=True)
+    print('-------get contact complete')
+
     #获取最新好友列表
     itchat.get_friends(update=True)
+    print('-------get friends complete')
+
     #获取最新群聊列表
     chatrooms = itchat.get_chatrooms(update=True)
+    print('-------get chatrooms complete')
+
     #更新群聊详细信息(人员列表)
     for chatroom in chatrooms:
-        print(json.dumps(chatroom))
+        #print(json.dumps(chatroom))
         itchat.update_chatroom(userName=chatroom['UserName'])
-        print(json.dumps(chatroom))
+    print('-------update chatrooms members complete')
+
     #启动心跳连接
     itchat.start_receiving()
-    print('-------start run,itchat'+str(itchat))
+    print('-------start receiving,itchat class:'+str(itchat))
 
+    #消息注册 好友消息
     @itchat.msg_register(TEXT)
     def text_reply(msg):
-        print(json.dumps(msg))
+        #print(json.dumps(msg))
+        q.put(msg)
         fromuser = itchat.search_friends(userName=msg['FromUserName'])['NickName']
         print(itchat.search_friends(userName=msg['ToUserName']))
         touser = itchat.search_friends(userName=msg['ToUserName'])['NickName']
@@ -88,6 +111,7 @@ def login():
         msgtext = msg['Text']
         print('time:%s from:%s  to: %s  content:%s' % (msgtime, fromuser, touser, msgtext))
 
+    # 消息注册 群聊消息
     @itchat.msg_register(TEXT, isGroupChat=True)
     def text_reply(msg):
         print(json.dumps(msg))
@@ -114,5 +138,14 @@ def login():
     #     times = times - 1
     #threading.Thread(target=newThread, name='newThread').start()  # 线程对象.启动
     #print("new thread running ...........")
+    while True:
+        print("---------- get msg from queue ...")
+        queuemsg = q.get()
+        fromuser = itchat.search_friends(userName=queuemsg['FromUserName'])['NickName']
+        print(itchat.search_friends(userName=queuemsg['ToUserName']))
+        touser = itchat.search_friends(userName=queuemsg['ToUserName'])['NickName']
+        msgtime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(queuemsg.createTime))
+        msgtext = queuemsg['Text']
+        print('msg from queue ... time:%s from:%s  to: %s  content:%s' % (msgtime, fromuser, touser, msgtext))
 
 login()

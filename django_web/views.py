@@ -1,6 +1,7 @@
 from django.shortcuts import render
 import django_web.login as weblogin
 from django.http import HttpResponse
+import json
 from django.template import RequestContext, loader
 
 # Create your views here.
@@ -19,5 +20,5 @@ def login(request):
     return HttpResponse(status)
 
 def get_msg(request):
-    msg= weblogin.get_msg()
-    return HttpResponse(msg)
+    msg = weblogin.get_msg()
+    return HttpResponse(json.dumps(msg))

@@ -34,11 +34,17 @@
 <div class="container projects">
     <div class="row">
         <div class="thumbnail" style="">
-            <img class="lazy" src="{% static 'images/qrcode.jpg' %}"  alt="Bootstrap 优站精选" width="400" height="40">
+            <img class="lazy" src="{% static 'wx_files/qrcode.jpg' %}"  alt="Bootstrap 优站精选" width="400" height="40">
             <div class="caption">
                 <p>请扫描二维码</p>
             </div>
-      </div>
+        </div>
+
+    </div>
+    <div class="row">
+        <div class="thumbnail" style="">
+            <textarea id="tcontent" rows="3" cols="20" style="width: 1000px;">暂时未收到消息</textarea>
+        </div>
 
     </div>
 </div>
@@ -46,14 +52,24 @@
 </body>
 <script type="text/javascript">
 
+    var login_status = false;
     function log_in(){
         $.ajax({
              type: "GET",
              url: "http://127.0.0.1:8000/login/",
              data: "",
              dataType: "text",
-             success: function(data){
-                alert(data)
+             success: function(data) {
+                 if (data != '200')
+                     log_in();
+                 else{
+                     alert('login success ...get msg ...');
+                     login_status = true;
+                 }
+             },
+             complete: function(){
+                if(login_status)
+                    get_msg();
              }
          });
     }
@@ -62,10 +78,14 @@
         $.ajax({
              type: "GET",
              url: "http://127.0.0.1:8000/getmsg/",
+             contentType: "application/x-www-form-urlencoded; charset=utf-8",
              data: "",
              dataType: "text",
              success: function(data){
-                alert(data)
+                $("#tcontent").text(decodeURI(data));
+             },
+             complete: function(){
+                 get_msg();
              }
          });
     }
