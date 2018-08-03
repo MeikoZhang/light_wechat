@@ -1,0 +1,17 @@
+python实现微信接口(itchat)
+	https://www.jianshu.com/p/9a1cfc761b7e
+	
+【itchat】用Python玩耍微信
+	https://www.cnblogs.com/franknihao/p/7603528.html
+	
+python itchat实现机器人
+	https://blog.csdn.net/qq_36607551/article/details/79373589
+	
+登录以及发送微信消息itchat 库
+	https://www.cnblogs.com/hzpythoner/p/7099022.html
+	
+Python微信库:itchat
+	https://www.cnblogs.com/jmmchina/p/6692149.html
+	
+Git初始化与上传
+	https://www.cnblogs.com/liuhan333/p/5683287.html
