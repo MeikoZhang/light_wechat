@@ -6,9 +6,12 @@ from itchat.content import *
 import os
 import threading
 import json
+from queue import Queue
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 picDir=os.path.join(BASE_DIR,'static\images\qrcode.jpg')
+
+q = Queue()
 
 def logout():
     itchat.logout()

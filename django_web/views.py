@@ -5,7 +5,7 @@ from django.template import RequestContext, loader
 
 # Create your views here.
 def index(request):
-    return render(request, 'index.html')
+    return render(request, 'record.html')
 
 def test(request):
     return render(request, 'test.html')
