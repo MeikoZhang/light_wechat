@@ -148,14 +148,14 @@ def get_msg():
         msg_from = itchat.search_friends(userName=msg['FromUserName'])['NickName']
         msg_to = itchat.search_friends(userName=msg['ToUserName'])['NickName']
         msg_text = msg['Text']
-        print('好友消息 ... time:%s from:%15s  to: %15s  content:%s' % (msg_time, msg_from, msg_to, msg_text))
+        print('好友消息 ... time:%s from:%-15s  to: %-15s  content:%s' % (msg_time, msg_from, msg_to, msg_text))
     else:
         msg_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(msg.createTime))
         msg_from = msg['ActualNickName']
         msg_to = msg['User']['NickName']
         # chatgroupname = itchat.search_chatrooms(userName=msg['ToUserName'])['NickName']
         msg_text = msg['Text']
-        print('群消息 ... time:%s from:%15s  to:%15s  content:%s' % (msg_time, msg_from, msg_to, msg_text))
+        print('群内消息 ... time:%s from:%-15s  to:%-15s  content:%s' % (msg_time, msg_from, msg_to, msg_text))
     return {'msg_type': q_msg.get_type(), 'msg_time': msg_time, 'msg_from': msg_from,
             'msg_to': msg_to, 'msg_text': msg_text}
 
