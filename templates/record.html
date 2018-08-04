@@ -1,0 +1,100 @@
+{% load static %}
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>滚动消息</title>
+
+    <!-- 引入jQuery -->
+    <script type="text/javascript" src="{% static 'js/jquery-3.3.1.min.js' %}"></script>
+
+    <!-- 引入 Bootstrap -->
+    <link href="{% static 'bootstrap/css/bootstrap.min.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'bootstrap/css/bootstrap.css' %}" rel="stylesheet" type="text/css">
+    <script type="text/javascript" src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'bootstrap/js/bootstrap.js' %}"></script>
+
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+    <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body>
+    <div class="container">
+        <div class="row" style="height:100px;"></div>
+        <div class="row ">
+            <div class="col-md-2 "></div>
+            <div class="col-md-8 ">
+                <div class="panel panel-info">
+                    <div class="panel panel-heading">
+                        接受到的信息
+                    </div>
+                <div class="panel-body">
+                    <div class="bs-example" data-example-id="contextual-table">
+                <table class="table table-bordered" id="table-case">
+                    <thead>
+                    <tr>
+                        <th>名称</th>
+                        <th>城市</th>
+                        <th>邮编</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td style="background: blue">Tanmay</td>
+                        <td style="background: blue">Bangalore</td>
+                        <td style="background: blue">560001</td>
+                    </tr>
+                    <tr>
+                        <td style="background: #bd0a01">Sachin</td>
+                        <td style="background: #bd0a01">Mumbai</td>
+                        <td style="background: #bd0a01">400003</td>
+                    </tr>
+                    <tr>
+                        <td style="background: lime">Uma</td>
+                        <td style="background: lime">Pune</td>
+                        <td style="background: lime">411027</td>
+                    </tr>
+                    <tr>
+                        <td style="background: lightslategrey">xushicheng</td>
+                        <td style="background: lightslategrey">BUNP</td>
+                        <td style="background: lightslategrey">123456</td>
+                    </tr>
+                    <tr>
+                        <td style="background: yellow">xussegeng</td>
+                        <td style="background: yellow">BdfP</td>
+                        <td style="background: yellow">885856</td>
+                    </tr>
+                    <tr>
+                        <td style="background: palegreen">adfeng</td>
+                        <td style="background: palegreen">upNP</td>
+                        <td style="background: palegreen">485556</td>
+                    </tr>
+                    </tbody>
+                </table>
+                    </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 "></div>
+</body>
+<script>
+    $(function(){
+        let text=$("tbody:first");//定义第一个tr内容
+        let clear;//定义需要清除动画的部分
+        text.hover(function(){
+            clearInterval(clear);//鼠标悬停，清除动画，停止滚动
+        },function(){
+            clear=setInterval(function(){
+                let field=text.find("tr:first");//获取第一个tr内容
+                let high=field.height();//获取需要滚动的高度
+                text.animate({ marginTop:-high+"px"},600,function(){//隐藏第一行
+                    field.css("marginTop",0).appendTo(text);//将该行的margin值置零,然后插入到最后
+                    text.css("marginTop",0);
+                })
+            },1000)//滚动间隔时间
+        }).trigger("mouseleave");//自动滚动
+    });
+</script>
+</html>

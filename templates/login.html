@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
 
     <!-- 引入jQuery -->
-    <script src="http://apps.bdimg.com/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
+{#    <script src="http://apps.bdimg.com/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>#}
     <script type="text/javascript" src="{% static 'js/jquery-3.3.1.min.js' %}"></script>
 
     <!-- 引入 Bootstrap -->
@@ -25,7 +25,7 @@
 <body>
 
 <div class="jumbotron masthead">
-  <div class="container">
+  <div class="container" style="height:100px;">
     <h1>Bootstrap</h1>
     <h2>简洁、直观、强悍的前端开发框架，让web开发更迅速、简单。</h2>
   </div>
@@ -33,27 +33,97 @@
 
 <div class="container projects">
     <div class="row">
-        <div class="thumbnail" style="">
-            <img class="lazy" src="{% static 'images/qrcode.jpg' %}"  alt="Bootstrap 优站精选" width="400" height="40">
+        <div class="thumbnail">
+            <img class="lazy" src="{% static 'wx_files/qrcode.jpg' %}"  alt="Bootstrap 优站精选" width="200px">
             <div class="caption">
-                <p>请扫描二维码</p>
+                <p>二维码</p>
             </div>
-      </div>
+        </div>
 
+    </div>
+    <div class="row">
+        <div class="thumbnail" style="">
+            <textarea id="tcontent" rows="3" cols="20" style="width: 1000px;">暂时未收到消息</textarea>
+        </div>
+    </div>
+    <div class="row ">
+        <div class="col-md-2 "></div>
+        <div class="col-md-8 ">
+            <div class="panel panel-info">
+                <div class="panel panel-heading">
+                    接受到的信息
+                </div>
+            <div class="panel-body">
+                <div class="bs-example" data-example-id="contextual-table">
+            <table class="table table-bordered" id="table-case">
+                <thead>
+                <tr>
+                    <th>名称</th>
+                    <th>城市</th>
+                    <th>邮编</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td style="background: blue">Tanmay</td>
+                    <td style="background: blue">Bangalore</td>
+                    <td style="background: blue">560001</td>
+                </tr>
+                <tr>
+                    <td style="background: #bd0a01">Sachin</td>
+                    <td style="background: #bd0a01">Mumbai</td>
+                    <td style="background: #bd0a01">400003</td>
+                </tr>
+                <tr>
+                    <td style="background: lime">Uma</td>
+                    <td style="background: lime">Pune</td>
+                    <td style="background: lime">411027</td>
+                </tr>
+                <tr>
+                    <td style="background: lightslategrey">xushicheng</td>
+                    <td style="background: lightslategrey">BUNP</td>
+                    <td style="background: lightslategrey">123456</td>
+                </tr>
+                <tr>
+                    <td style="background: yellow">xussegeng</td>
+                    <td style="background: yellow">BdfP</td>
+                    <td style="background: yellow">885856</td>
+                </tr>
+                <tr>
+                    <td style="background: palegreen">adfeng</td>
+                    <td style="background: palegreen">upNP</td>
+                    <td style="background: palegreen">485556</td>
+                </tr>
+                </tbody>
+            </table>
+                </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
 </body>
 <script type="text/javascript">
 
+    var login_status = false;
     function log_in(){
         $.ajax({
              type: "GET",
              url: "http://127.0.0.1:8000/login/",
              data: "",
              dataType: "text",
-             success: function(data){
-                alert(data)
+             success: function(data) {
+                 if (data != '200')
+                     setTimeout("log_in()", 1000);
+                 else{
+                     alert('login success ...get msg ...');
+                     login_status = true;
+                 }
+             },
+             complete: function(){
+                if(login_status)
+                    get_msg();
              }
          });
     }
@@ -62,17 +132,65 @@
         $.ajax({
              type: "GET",
              url: "http://127.0.0.1:8000/getmsg/",
-             data: "",
-             dataType: "text",
+             contentType: "application/json; charset=utf-8",
+             data: {},
+             dataType: "json",
              success: function(data){
-                alert(data)
+                $("#tcontent").text("time:{0} from:{1}  to:{2}  content:{3}"
+                    .format(data.msg_time, data.msg_from, data.msg_to, data.msg_text));
+             },
+             complete: function(){
+                 get_msg();
              }
          });
     }
 
+    function spread(){
+        let text=$("tbody:first");//定义第一个tr内容
+        let clear;//定义需要清除动画的部分
+        text.hover(function(){
+            clearInterval(clear);//鼠标悬停，清除动画，停止滚动
+        },function(){
+            clear=setInterval(function(){
+                let field=text.find("tr:first");//获取第一个tr内容
+                let high=field.height();//获取需要滚动的高度
+                text.animate({ marginTop:-high+"px"},600,function(){
+                    //隐藏第一行
+                    field.css("marginTop",0).appendTo(text);
+                    //将该行的margin值置零,然后插入到最后
+                    text.css("marginTop",0);
+                })
+            },1000)//滚动间隔时间
+        }).trigger("mouseleave");//自动滚动
+
+    };
+
     $(function(){
+        //spread();
+        String.prototype.format = function(args) {
+            var result = this;
+            if (arguments.length > 0) {
+                if (arguments.length == 1 && typeof (args) == "object") {
+                    for (var key in args) {
+                        if(args[key]!=undefined){
+                            var reg = new RegExp("({" + key + "})", "g");
+                            result = result.replace(reg, args[key]);
+                        }
+                    }
+                }
+                else {
+                    for (var i = 0; i < arguments.length; i++) {
+                        if (arguments[i] != undefined) {
+                            var reg= new RegExp("({)" + i + "(})", "g");
+                            result = result.replace(reg, arguments[i]);
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+
         log_in();
-        //get_msg();
     });
 </script>
 
