@@ -104,3 +104,19 @@ venv.bak/
 .mypy_cache/
 .idea/vcs.xml
 .idea/workspace.xml
+
+# Windows:
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Python:
+*.py[cod]
+*.so
+*.egg
+*.egg-info
+migrations/
+.idea/
+logs/
+static/images/logo.png
+web_sso/migrations/0001_initial.py
