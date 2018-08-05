@@ -19,6 +19,18 @@ def qrcode(request):
     return render(request, 'login.html')
 
 
+def load_login(request):
+    status = weblogin.load_login()
+    print('load_login return status : ' + json.dumps(status))
+    return HttpResponse(status)
+
+
+def check_login(request):
+    status = weblogin.check_login()
+    print('check_login return status : ' + status)
+    return HttpResponse(status)
+
+
 def login(request):
     status = weblogin.login()
     print('login return status : '+status)

@@ -33,12 +33,22 @@ def qrCallback(uuid=None, status=None, qrcode=None):
 
 
 def getQR():
+    global qruuid
     qruuid = itchat.get_QRuuid()
     itchat.uuid = qruuid
     if os.path.exists(picDir):
         os.remove(picDir)
     itchat.get_QR(uuid=qruuid, picDir=picDir, qrCallback=qrCallback)
     return qruuid
+
+
+def load_login():
+    # return itchat.load_login_status(fileDir=loginDir, loginCallback=loginCallback, exitCallback=exitCallback)
+    return itchat.load_login_status(fileDir=loginDir, loginCallback=loginCallback, exitCallback=exitCallback)
+
+
+def check_login():
+    return itchat.check_login(qruuid)
 
 
 def login():
@@ -55,9 +65,6 @@ def login():
         print('Reloading QR Code')
         return status
 
-    print('-------get login success')
-    # 保存登陆状态
-    itchat.dump_login_status(fileDir=loginDir)
     # 获取登陆人信息
     user_info = itchat.web_init()
     print('Login successfully as %s' % user_info['User']['NickName'])
@@ -83,6 +90,10 @@ def login():
         # print(json.dumps(chatroom))
         itchat.update_chatroom(userName=chatroom['UserName'])
     print('-------update chatrooms members complete')
+
+    print('-------get login success')
+    # 保存登陆状态
+    itchat.dump_login_status(fileDir=loginDir)
 
     # 启动心跳连接
     itchat.start_receiving()

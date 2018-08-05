@@ -34,9 +34,13 @@
 <div class="container projects">
     <div class="row">
         <div class="thumbnail">
-            <img class="lazy" src="{% static 'wx_files/qrcode.jpg' %}"  alt="Bootstrap 优站精选" width="200px">
+            <img id="qrcode" class="lazy" src="/static/wx_files/qrcode.jpg"  alt="Bootstrap 优站精选" width="200px">
             <div class="caption">
                 <p>二维码</p>
+                <button id="login_btn">登陆</button>
+                <button id="qr_btn">检查二维码状态</button>
+                <button id="check_btn">检查登陆状态</button>
+                <button id="load_btn">加载登陆状态</button>
             </div>
         </div>
 
@@ -190,8 +194,68 @@
             return result;
         }
 
-        log_in();
+        {#log_in();#}
     });
+
+
+
+    $("#login_btn").click(function () {
+        $.ajax({
+             type: "GET",
+             url: "http://127.0.0.1:8000/login/",
+             data: "",
+             dataType: "text",
+             success: function(data) {
+                 if (data != '200')
+                     setTimeout("log_in()", 1000);
+                 else{
+                     alert('login success ...get msg ...');
+                     login_status = true;
+                 }
+             },
+             complete: function(){
+                if(login_status)
+                    get_msg();
+             }
+         });
+    });
+
+    $("#qr_btn").click(function () {
+        $.ajax({
+             type: "GET",
+             url: "http://127.0.0.1:8000/qrcode/",
+             data: "",
+             dataType: "text",
+             success: function(data) {
+                  $("#qrcode").attr("src","/static/wx_files/qrcode.jpg?"+Math.random());
+             }
+         });
+    });
+
+    $("#check_btn").click(function () {
+        $.ajax({
+             type: "GET",
+             url: "http://127.0.0.1:8000/checklogin/",
+             data: "",
+             dataType: "text",
+             success: function(data) {
+                alert(data)
+             }
+         });
+    });
+
+    $("#load_btn").click(function () {
+        $.ajax({
+             type: "GET",
+             url: "http://127.0.0.1:8000/loadlogin/",
+             data: "",
+             dataType: "text",
+             success: function(data) {
+                alert(data)
+             }
+         });
+    });
+
 </script>
 
 </html>
