@@ -15,7 +15,7 @@ def test(request):
 
 
 def qrcode(request):
-    weblogin.getQR()
+    weblogin.get_qr()
     return render(request, 'login.html')
 
 

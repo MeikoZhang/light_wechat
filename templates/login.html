@@ -34,7 +34,7 @@
 <div class="container projects">
     <div class="row">
         <div class="thumbnail">
-            <img id="qrcode" class="lazy" src="/static/wx_files/qrcode.jpg"  alt="Bootstrap 优站精选" width="200px">
+            <img id="qrcode" class="lazy" src="/static/wx_login/qrcode.jpg"  alt="Bootstrap 优站精选" width="200px">
             <div class="caption">
                 <p>二维码</p>
                 <button id="login_btn">登陆</button>
@@ -194,7 +194,7 @@
             return result;
         }
 
-        {#log_in();#}
+        log_in();
     });
 
 
@@ -227,7 +227,7 @@
              data: "",
              dataType: "text",
              success: function(data) {
-                  $("#qrcode").attr("src","/static/wx_files/qrcode.jpg?"+Math.random());
+                  $("#qrcode").attr("src","/static/wx_login/qrcode.jpg?"+Math.random());
              }
          });
     });
