@@ -8,13 +8,23 @@ from queue import Queue
 from django_web.models import WxRecord
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-picDir = os.path.join(BASE_DIR, 'static\wx_files\qrcode.jpg')
-loginDir = os.path.join(BASE_DIR, 'static\wx_files\itchat.pkl')
+# 验证码存储路径
+qrcode_path = os.path.join(BASE_DIR, 'static\wx_login\qrcode.jpg')
+# 登陆信息存储目录
+login_file = os.path.join(BASE_DIR, 'static\wx_login\itchat.pkl')
+# 微信图片/文件存放目录
+wx_files_dir = os.path.join(BASE_DIR, 'static\wx_files')
 
+# web页面获取消息队列
 q = Queue(maxsize=100)
 
+# 是否登陆
 if_login = False
+
+# 是否运行中
 if_run = False
+
+# 获取的uuid
 qruuid = None
 
 
@@ -28,7 +38,7 @@ def exitCallback():
 
 def qrCallback(uuid=None, status=None, qrcode=None):
     print("二维码获取及存储 ...uuid:%s status:%s" % (uuid, status))
-    with open(picDir, 'wb') as f:
+    with open(qrcode_path, 'wb') as f:
         f.write(qrcode)
 
 
@@ -36,15 +46,15 @@ def getQR():
     global qruuid
     qruuid = itchat.get_QRuuid()
     itchat.uuid = qruuid
-    if os.path.exists(picDir):
-        os.remove(picDir)
-    itchat.get_QR(uuid=qruuid, picDir=picDir, qrCallback=qrCallback)
+    if os.path.exists(qrcode_path):
+        os.remove(qrcode_path)
+    itchat.get_QR(uuid=qruuid, picDir=qrcode_path, qrCallback=qrCallback)
     return qruuid
 
 
 def load_login():
     # return itchat.load_login_status(fileDir=loginDir, loginCallback=loginCallback, exitCallback=exitCallback)
-    return itchat.load_login_status(fileDir=loginDir, loginCallback=loginCallback, exitCallback=exitCallback)
+    return itchat.load_login_status(fileDir=login_file, loginCallback=loginCallback, exitCallback=exitCallback)
 
 
 def check_login():
@@ -93,7 +103,7 @@ def login():
 
     print('-------get login success')
     # 保存登陆状态
-    itchat.dump_login_status(fileDir=loginDir)
+    itchat.dump_login_status(fileDir=login_file)
 
     # 启动心跳连接
     itchat.start_receiving()
@@ -134,6 +144,13 @@ def login():
         msg_text = msg['Text']
         WxRecord.objects.create(msg_type='2', msg_time=msg_time, msg_from=msg_from, msg_to=msg_to, msg_text=msg_text)
 
+    @itchat.msg_register([PICTURE, RECORDING, ATTACHMENT, VIDEO])
+    def download_files(msg):
+        msg.download(os.path.join(wx_files_dir,msg.fileName))
+        typeSymbol = {
+            PICTURE: 'img',
+            VIDEO: 'vid', }.get(msg.type, 'fil')
+        return '@%s@%s' % (typeSymbol, msg.fileName)
     # itchat.run(blockThread=False)
 
     def new_thread():

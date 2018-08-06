@@ -1,12 +1,14 @@
 from django.test import TestCase
 
 # Create your tests here.
-import itchat,time,sys
+import itchat
+import time
+import sys
 from itchat.content import *
 import os
-import threading
 import json
 from queue import Queue
+
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 picDir = os.path.join(BASE_DIR,'static\wx_files\qrcode.jpg')
@@ -23,7 +25,8 @@ def login(if_login):
     if_login = True
 
 
-def logout(if_run):
+def logout(self, if_run):
+    self.logout = False
     if_run = True
 
 
@@ -129,29 +132,29 @@ def login():
         msgtime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(msg.createTime))
         print('time:%s from:%s  group:%s  content:%s' % (msgtime, chatusername, chatgroupname, msgtext))
 
+    @itchat.msg_register([PICTURE, RECORDING, ATTACHMENT, VIDEO])
+    def download_files(msg):
+        file = msg.download(os.path.join(BASE_DIR,'static\wx_files', msg.fileName))
+        typeSymbol = {
+            PICTURE: 'img',
+            VIDEO: 'vid', }.get(msg.type, 'fil')
+        return '@%s@%s' % (typeSymbol, msg.fileName)
+
     # itchat.run(blockThread=False)
+    itchat.run()
 
-    def newThread():
-        itchat.run()
-    threading.Thread(target=newThread).start()
-    print("正在监控中 ... ")
-    # times = 30
-    # while times > 0:
-    #     #msg = itchat.get_msg()
-    #     msg = itchat
-    #     print(json.dumps(msg))
-    #     time.sleep(1)
-    #     times = times - 1
-    # threading.Thread(target=newThread, name='newThread').start()  # 线程对象.启动
-    # print("new thread running ...........")
-    while True:
-        print("---------- get msg from queue ...")
-        queuemsg = q.get()
-        fromuser = itchat.search_friends(userName=queuemsg['FromUserName'])['NickName']
-        print(itchat.search_friends(userName=queuemsg['ToUserName']))
-        touser = itchat.search_friends(userName=queuemsg['ToUserName'])['NickName']
-        msgtime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(queuemsg.createTime))
-        msgtext = queuemsg['Text']
-        print('msg from queue ... time:%s from:%s  to: %s  content:%s' % (msgtime, fromuser, touser, msgtext))
+    # def newThread():
+    #     itchat.run()
+    # threading.Thread(target=newThread).start()
+    # print("正在监控中 ... ")
+    # while True:
+    #     print("---------- get msg from queue ...")
+    #     queuemsg = q.get()
+    #     fromuser = itchat.search_friends(userName=queuemsg['FromUserName'])['NickName']
+    #     print(itchat.search_friends(userName=queuemsg['ToUserName']))
+    #     touser = itchat.search_friends(userName=queuemsg['ToUserName'])['NickName']
+    #     msgtime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(queuemsg.createTime))
+    #     msgtext = queuemsg['Text']
+    #     print('msg from queue ... time:%s from:%s  to: %s  content:%s' % (msgtime, fromuser, touser, msgtext))
 
-#login()
+login()
