@@ -83,8 +83,10 @@ def login():
 
     print('-------get login success')
 
+    itchat.login()
+
     # 保存登陆状态
-    itchat.dump_login_status(fileDir=loginDir)
+    itchat.dump_login_status(fileDir=login_status_dir)
 
     # 获取登陆人信息
     userInfo = itchat.web_init()
@@ -168,7 +170,7 @@ def login():
 # 消息注册 好友消息
 @itchat.msg_register(TEXT)
 def text_reply(msg):
-    # print(json.dumps(msg))
+    print(json.dumps(msg))
     fromuser = itchat.search_friends(userName=msg['FromUserName'])['NickName']
     print(itchat.search_friends(userName=msg['ToUserName']))
     touser = itchat.search_friends(userName=msg['ToUserName'])['NickName']
@@ -177,12 +179,24 @@ def text_reply(msg):
     print('time:%s from:%s  to: %s  content:%s' % (msgtime, fromuser, touser, msgtext))
 
 
-print(itchat.get_QRuuid())
 # hotReload=False, statusStorageDir='itchat.pkl',
 #             enableCmdQR=False, picDir=None, qrCallback=None,
 #             loginCallback=None, exitCallback=None
-itchat.auto_login(hotReload=True, statusStorageDir=login_status_dir,
-                  enableCmdQR=False, picDir=qrCode_dir,
-                  qrCallback=qr_callback, loginCallback=login_callback, exitCallback=exit_callback)
+
+
+itchat.auto_login(hotReload=True, statusStorageDir=login_status_dir,picDir=qrCode_dir,
+                  # qrCallback=qr_callback,
+                  loginCallback=login_callback, exitCallback=exit_callback)
 print('over')
-itchat.run()
+
+# time.sleep(5)
+# itchat.logout()
+# print('login out')
+#
+# itchat.auto_login(hotReload=True, statusStorageDir=login_status_dir,picDir=qrCode_dir,
+#                   # qrCallback=qr_callback,
+#                   loginCallback=login_callback, exitCallback=exit_callback)
+# print('re login over')
+
+itchat.run(debug=True, blockThread=False)
+print('run over')

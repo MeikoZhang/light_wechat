@@ -18,7 +18,6 @@ wx_files_dir = os.path.join(BASE_DIR, 'static\wx_files')
 q = Queue(maxsize=100)
 
 if_login = False
-if_run = False
 qruuid = None
 
 
@@ -36,6 +35,7 @@ def exit_callback():
 
 def qr_callback(uuid=None, status=None, qrcode=None):
     logger.info("二维码获取及存储 ...uuid:%s status:%s" % (uuid, status))
+    logger.info("uuid")
     with open(qrCode_dir, 'wb') as f:
         f.write(qrcode)
 
@@ -250,3 +250,42 @@ def get_msg():
                     (msg_time, msg_from, msg_to, msg_text))
     return {'status': 'ok', 'msg_type': msg_type, 'msg_time': msg_time,
             'msg_from': msg_from, 'msg_to': msg_to, 'msg_text': msg_text}
+
+
+def thread_auto_login():
+
+    # 消息注册 好友消息
+    @itchat.msg_register(TEXT)
+    def text_reply(msg):
+        print(json.dumps(msg))
+        fromuser = itchat.search_friends(userName=msg['FromUserName'])['NickName']
+        print(itchat.search_friends(userName=msg['ToUserName']))
+        touser = itchat.search_friends(userName=msg['ToUserName'])['NickName']
+        msgtime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(msg.createTime))
+        msgtext = msg['Text']
+        print('time:%s from:%s  to: %s  content:%s' % (msgtime, fromuser, touser, msgtext))
+
+    itchat.auto_login(hotReload=True, statusStorageDir=login_status_dir, picDir=qrCode_dir,
+                      qrCallback=qr_callback,
+                      loginCallback=login_callback, exitCallback=exit_callback)
+    itchat.run(blockThread=False)
+    global if_login
+    if_login = True
+    print('auto_login over')
+
+
+def auto_login():
+    print('thread_auto_login start')
+    threading.Thread(target=thread_auto_login).start()
+    print('thread_auto_login over')
+
+
+def login_status():
+    return if_login;
+
+
+def logout():
+    global if_login
+    if_login = False
+    itchat.logout();
+

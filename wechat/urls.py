@@ -24,10 +24,13 @@ import django_web.views as view
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^index/', view.index), #在url中凡是以url开头的访问都使用index函数来处理该请求
-    url(r'^test/', view.test),
-    url(r'^qrcode/', view.qrcode),
-    url(r'^loadlogin/', view.load_login),
-    url(r'^checklogin/', view.check_login),
+    # url(r'^test/', view.test),
+    # url(r'^qrcode/', view.qrcode),
+    # url(r'^loadlogin/', view.load_login),
+    # url(r'^checklogin/', view.check_login),
+    # url(r'^login/', view.login),
+    # url(r'^getmsg/', view.get_msg)
     url(r'^login/', view.login),
-    url(r'^getmsg/', view.get_msg)
+    url(r'^login_status/', view.login_status),
+    url(r'^logout/', view.logout)
 ]

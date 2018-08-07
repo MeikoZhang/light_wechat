@@ -6,7 +6,9 @@ import json
 
 # Create your views here.
 def index(request):
-    return render(request, 'record.html')
+    # weblogin.auto_login()
+    print('request index over')
+    return render(request, 'index.html')
 
 
 def test(request):
@@ -29,7 +31,7 @@ def check_login(request):
 
 
 def login(request):
-    status = weblogin.login()
+    status = weblogin.auto_login()
     return HttpResponse(status)
 
 
@@ -37,3 +39,11 @@ def get_msg(request):
     msg = weblogin.get_msg()
     return HttpResponse(json.dumps(msg) if msg is not None else "",
                         content_type="application/json; charset=utf-8")
+
+
+def login_status(request):
+    return HttpResponse(weblogin.login_status())
+
+
+def logout(request):
+    return HttpResponse(weblogin.logout())
