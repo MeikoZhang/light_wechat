@@ -81,6 +81,7 @@ def login():
         return status
     elif status == '408':
         logger.info('check login, qrCode timeout')
+        get_qr()
         return status
 
     # 获取登陆人信息
@@ -117,14 +118,9 @@ def login():
     itchat.start_receiving()
     logger.info('start receiving and heartbeat')
 
-    # web页面获取信息的队列
     class WebMessage(object):
-        def __init__(self, _type, _msg):
-            self._type = _type
+        def __init__(self, _msg):
             self._msg = _msg
-
-        def get_type(self):
-            return self._type
 
         def get_msg(self):
             return self._msg
@@ -134,44 +130,57 @@ def login():
     def text_reply(msg):
         logger.debug(json.dumps(msg))
 
-        q_msg = WebMessage('text', msg)
-        q.put(q_msg)
+        # q_msg = WebMessage('text', msg)
+        # q.put(q_msg)
 
         msg_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(msg.createTime))
         msg_from = itchat.search_friends(userName=msg['FromUserName'])['NickName']
         msg_to = itchat.search_friends(userName=msg['ToUserName'])['NickName']
         msg_text = msg['Text']
-        WxRecord.objects.create(msg_type='1', msg_time=msg_time, msg_from=msg_from, msg_to=msg_to, msg_text=msg_text)
+
+        wx_record = WxRecord(is_group='0', msg_type=msg.type,
+                             msg_time=msg_time, msg_from=msg_from, msg_to=msg_to, msg_text=msg_text)
+        wx_record.save()
+
+        q.put(WebMessage({'is_group': '0', 'msg_type': msg.type, 'msg_time': msg_time,
+                          'msg_from': msg_from, 'msg_to': msg_to, 'msg_text': msg_text}))
+
         logger.debug("save to db type:%s time:%s from:%-15s  to: %-15s  content:%s"
-                     % ('text', msg_time, msg_from, msg_to, msg_text))
+                     % (msg.type, msg_time, msg_from, msg_to, msg_text))
 
     # 消息注册，好友图片/音频/视频/文件消息
     @itchat.msg_register([PICTURE, RECORDING, ATTACHMENT, VIDEO])
     def download_files(msg):
         msg.download(os.path.join(wx_files_dir, msg.fileName))
 
-        msg_type = {PICTURE: 'img', VIDEO: 'vid', }.get(msg.type, 'fil')
         msg_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(msg.createTime))
         msg_from = itchat.search_friends(userName=msg['FromUserName'])['NickName']
         msg_to = itchat.search_friends(userName=msg['ToUserName'])['NickName']
         msg_text = os.path.join(wx_files_dir, msg.fileName)
-        WxRecord.objects.create(msg_type='1', msg_time=msg_time, msg_from=msg_from, msg_to=msg_to, msg_text=msg_text)
+
+        wx_record = WxRecord(is_group='0', msg_type=msg.type,
+                             msg_time=msg_time, msg_from=msg_from, msg_to=msg_to, msg_text=msg_text)
+        wx_record.save()
+        q.put(WebMessage({'is_group': '0', 'msg_type': msg.type, 'msg_time': msg_time,
+                          'msg_from': msg_from, 'msg_to': msg_to, 'msg_text': msg_text}))
         logger.debug("save to db type:%s time:%s from:%-15s  to: %-15s  content:%s"
-                     % (msg_type, msg_time, msg_from, msg_to, msg_text))
+                     % (msg.type, msg_time, msg_from, msg_to, msg_text))
 
     # 消息注册，群文本消息
     @itchat.msg_register(TEXT, isGroupChat=True)
     def text_reply(msg):
         logger.debug(json.dumps(msg))
 
-        q_msg = WebMessage('2', msg)
-        q.put(q_msg)
-
         msg_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(msg.createTime))
         msg_from = msg['ActualNickName']
         msg_to = msg['User']['NickName']
         msg_text = msg['Text']
-        WxRecord.objects.create(msg_type='2', msg_time=msg_time, msg_from=msg_from, msg_to=msg_to, msg_text=msg_text)
+
+        wx_record = WxRecord(is_group='1', msg_type=msg.type,
+                             msg_time=msg_time, msg_from=msg_from, msg_to=msg_to, msg_text=msg_text)
+        wx_record.save()
+        q.put(WebMessage({'is_group': '1', 'msg_type': msg.type, 'msg_time': msg_time,
+                          'msg_from': msg_from, 'msg_to': msg_to, 'msg_text': msg_text}))
         logger.debug("save to db type:%s time:%s from:%-15s  to: %-15s  content:%s"
                      % ('2', msg_time, msg_from, msg_to, msg_text))
 
@@ -180,14 +189,18 @@ def login():
     def download_files(msg):
         msg.download(os.path.join(wx_files_dir, msg.fileName))
 
-        msg_type = {PICTURE: 'img', VIDEO: 'vid', }.get(msg.type, 'fil')
         msg_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(msg.createTime))
         msg_from = itchat.search_friends(userName=msg['FromUserName'])['NickName']
         msg_to = itchat.search_friends(userName=msg['ToUserName'])['NickName']
         msg_text = os.path.join(wx_files_dir, msg.fileName)
-        WxRecord.objects.create(msg_type='1', msg_time=msg_time, msg_from=msg_from, msg_to=msg_to, msg_text=msg_text)
+
+        wx_record = WxRecord(is_group='1', msg_type=msg.type,
+                             msg_time=msg_time, msg_from=msg_from, msg_to=msg_to, msg_text=msg_text)
+        wx_record.save()
+        q.put(WebMessage({'is_group': '1', 'msg_type': msg.type, 'msg_time': msg_time,
+                          'msg_from': msg_from, 'msg_to': msg_to, 'msg_text': msg_text}))
         logger.debug("save to db type:%s time:%s from:%-15s  to: %-15s  content:%s"
-                     % (msg_type, msg_time, msg_from, msg_to, msg_text))
+                     % (msg.type, msg_time, msg_from, msg_to, msg_text))
 
     # 新建线程跑任务
     def new_thread():
@@ -198,36 +211,42 @@ def login():
     return status
 
 
+# 获取消息
 def get_msg():
     if not if_login:
         logger.info("status not login, reloading...")
         reload_status = login()
-        if reload_status != '200':
-            logger.info("status not login, reloading failed")
-            return {'msg_text': 'status not login'}
-        logger.info("reload login success ...")
+        if reload_status == '200':
+            logger.info("status not login, reloading success")
+        else:
+            return {'status': 'not login, reloading failed'}
 
     logger.info("getting msg from webQueue ...")
     try:
         q_msg = q.get(timeout=25)
     except Exception:
+        logger.error("getting from queue error")
         q_msg = None
 
     if q_msg is None:
         return None
+
     msg = q_msg.get_msg()
-    if q_msg.get_type() == '1':
-        msg_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(msg.createTime))
-        msg_from = itchat.search_friends(userName=msg['FromUserName'])['NickName']
-        msg_to = itchat.search_friends(userName=msg['ToUserName'])['NickName']
-        msg_text = msg['Text']
-        logger.info('好友消息 ... time:%s from:%-15s  to: %-15s  content:%s' % (msg_time, msg_from, msg_to, msg_text))
+
+    msg_type_list = {TEXT: '文本消息', PICTURE: '图片消息',
+                     RECORDING: '语音消息', ATTACHMENT: '附件消息', VIDEO: '视频消息'}
+    msg_type = msg_type_list.get(msg.get('msg_type'))
+    msg_text = msg.get('msg_text') if msg_type == '文本消息' else msg_type
+    msg_time = msg.get('msg_time')
+    msg_from = msg.get('msg_from')
+    msg_to = msg.get('msg_to')
+
+    msg_group = msg.get('is_group')
+    if msg_group == '0':
+        logger.info('好友消息 ... time:%s from:%-15s  to: %-15s  content:%s' %
+                    (msg_time, msg_from, msg_to, msg_text))
     else:
-        msg_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(msg.createTime))
-        msg_from = msg['ActualNickName']
-        msg_to = msg['User']['NickName']
-        # chatgroupname = itchat.search_chatrooms(userName=msg['ToUserName'])['NickName']
-        msg_text = msg['Text']
-        logger.info('群内消息 ... time:%s from:%-15s  to:%-15s  content:%s' % (msg_time, msg_from, msg_to, msg_text))
-    return {'msg_type': q_msg.get_type(), 'msg_time': msg_time, 'msg_from': msg_from,
-            'msg_to': msg_to, 'msg_text': msg_text}
+        logger.info('群内消息 ... time:%s from:%-15s  to:%-15s  content:%s' %
+                    (msg_time, msg_from, msg_to, msg_text))
+    return {'status': 'ok', 'msg_type': msg_type, 'msg_time': msg_time,
+            'msg_from': msg_from, 'msg_to': msg_to, 'msg_text': msg_text}

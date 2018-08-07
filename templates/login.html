@@ -10,8 +10,8 @@
     <script type="text/javascript" src="{% static 'js/jquery-3.3.1.min.js' %}"></script>
 
     <!-- 引入 Bootstrap -->
-    <link href="{% static 'bootstrap/css/bootstrap.min.css' %}" rel="stylesheet" type="text/css">
     <link href="{% static 'bootstrap/css/bootstrap.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'bootstrap/css/bootstrap-theme.css' %}" rel="stylesheet" type="text/css">
     <script type="text/javascript" src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'bootstrap/js/bootstrap.js' %}"></script>
 
@@ -21,94 +21,86 @@
     <![endif]-->
 
     <title>测试平台</title>
+
+    <style>
+        .loading {
+            width: 160px;
+            height: 56px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            line-height: 56px;
+            color: #fff;
+            padding-left: 60px;
+            font-size: 15px;
+            background: #000 no-repeat 10px 50%;
+            opacity: 0.7;
+            z-index: 9999;
+            -moz-border-radius: 20px;
+            -webkit-border-radius: 20px;
+            border-radius: 20px;
+            filter: progid:DXImageTransform.Microsoft.Alpha(opacity=70);
+        }
+    </style>
 </head>
 <body>
 
 <div class="jumbotron masthead">
   <div class="container" style="height:100px;">
     <h1>Bootstrap</h1>
-    <h2>简洁、直观、强悍的前端开发框架，让web开发更迅速、简单。</h2>
   </div>
 </div>
 
 <div class="container projects">
     <div class="row">
-        <div class="thumbnail">
-            <img id="qrcode" class="lazy" src="/static/wx_login/qrcode.jpg"  alt="Bootstrap 优站精选" width="200px">
-            <div class="caption">
-                <p>二维码</p>
-                <button id="login_btn">登陆</button>
-                <button id="qr_btn">检查二维码状态</button>
-                <button id="check_btn">检查登陆状态</button>
-                <button id="load_btn">加载登陆状态</button>
+        <div class="col-xs-12 col-md-6">
+            <div class="thumbnail">
+                <img id="qrcode" class="lazy" src="/static/wx_login/qrcode.jpg"  alt="Bootstrap 优站精选" width="200px">
+    {#            <p>请重新扫描二维码</p>#}
+                <div class="caption">
+                    <p>二维码</p>
+                    <button id="login_btn">登陆</button>
+                    <button id="qr_btn">检查二维码状态</button>
+                    <button id="check_btn">检查登陆状态</button>
+                    <button id="load_btn">加载登陆状态</button>
+                </div>
             </div>
         </div>
+        <div class="col-xs-12 col-md-6">
+            <div class="thumbnail">
+                <label>消息列表</label>
+                <ul id="msglist" class="list-group">
+                    <li class="list-group-item">A</li>
+                    <li class="list-group-item">B</li>
+                    <li class="list-group-item">C</li>
+                    <li class="list-group-item">D</li>
+                    <li class="list-group-item">E</li>
+                </ul>
+            </div>
+        </div>
+    </div>
 
-    </div>
-    <div class="row">
-        <div class="thumbnail" style="">
-            <textarea id="tcontent" rows="3" cols="20" style="width: 1000px;">暂时未收到消息</textarea>
-        </div>
-    </div>
+    <!--消息显示区域-->
     <div class="row ">
-        <div class="col-md-2 "></div>
-        <div class="col-md-8 ">
-            <div class="panel panel-info">
-                <div class="panel panel-heading">
-                    接受到的信息
-                </div>
-            <div class="panel-body">
-                <div class="bs-example" data-example-id="contextual-table">
-            <table class="table table-bordered" id="table-case">
-                <thead>
-                <tr>
-                    <th>名称</th>
-                    <th>城市</th>
-                    <th>邮编</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr>
-                    <td style="background: blue">Tanmay</td>
-                    <td style="background: blue">Bangalore</td>
-                    <td style="background: blue">560001</td>
-                </tr>
-                <tr>
-                    <td style="background: #bd0a01">Sachin</td>
-                    <td style="background: #bd0a01">Mumbai</td>
-                    <td style="background: #bd0a01">400003</td>
-                </tr>
-                <tr>
-                    <td style="background: lime">Uma</td>
-                    <td style="background: lime">Pune</td>
-                    <td style="background: lime">411027</td>
-                </tr>
-                <tr>
-                    <td style="background: lightslategrey">xushicheng</td>
-                    <td style="background: lightslategrey">BUNP</td>
-                    <td style="background: lightslategrey">123456</td>
-                </tr>
-                <tr>
-                    <td style="background: yellow">xussegeng</td>
-                    <td style="background: yellow">BdfP</td>
-                    <td style="background: yellow">885856</td>
-                </tr>
-                <tr>
-                    <td style="background: palegreen">adfeng</td>
-                    <td style="background: palegreen">upNP</td>
-                    <td style="background: palegreen">485556</td>
-                </tr>
-                </tbody>
-            </table>
-                </div>
-                </div>
-            </div>
-        </div>
+    </div>
+
+    <!--页面加载等待弹窗-->
+    <div id="myModal" class="modal fade" data-keyboard="false"
+            data-backdrop="static" data-role="dialog"
+            aria-labelledby="myModalLabel" aria-hidden="true">
+            <div id="loading" class="loading">等待手机确认中...</div>
     </div>
 </div>
 
 </body>
 <script type="text/javascript">
+    {#js String函数扩展#}
+    String.prototype.format = function () {
+        var args = [].slice.call(arguments);
+        return this.replace(/(\{\d+\})/g, function (a){
+            return args[+(a.substr(1,a.length-2))||0];
+        });
+};
 
     var login_status = false;
     function log_in(){
@@ -118,11 +110,23 @@
              data: "",
              dataType: "text",
              success: function(data) {
-                 if (data != '200')
-                     setTimeout("log_in()", 1000);
-                 else{
-                     alert('login success ...get msg ...');
+                 if(data === '200'){
+                     {#log in successfully#}
                      login_status = true;
+                     $('#myModal').modal('hide');
+                 }else if(data === '408') {
+                     {#uuid timed out#}
+                    {#window.location.href="http://127.0.0.1:8000/qrcode/";#}
+                     login_status = false;
+                     $("#qrcode").attr("src","/static/wx_login/qrcode.jpg?"+Math.random());
+                 }else if(data === '201'){
+                     {#waiting for press confirm #}
+                     login_status = false;
+                     $('#myModal').modal('show');
+                     setTimeout("log_in()", 5000);
+                 }else{
+                     {#unknown error#}
+                    alert("未知错误");
                  }
              },
              complete: function(){
@@ -140,8 +144,22 @@
              data: {},
              dataType: "json",
              success: function(data){
-                $("#tcontent").text("time:{0} from:{1}  to:{2}  content:{3}"
+                if(data.status == 'ok'){
+                    $("#tcontent").text("time:{0} from:{1}  to:{2}  content:{3}"
+                        .format(data.msg_time, data.msg_from, data.msg_to, data.msg_text))
+                }else{
+                 window.location.href="http://127.0.0.1:8000/qrcode/";
+                }
+
+                var ul = $("#msglist");
+                var li_count = $("#msglist li").length;
+                var msg_new = $('<li class="list-group-item"></li>');
+                msg_new.text("time:{0} from:{1}  to:{2}  content:{3}"
                     .format(data.msg_time, data.msg_from, data.msg_to, data.msg_text));
+                if(li_count > 5){
+                    $("#msglist li:eq(0)").remove();
+                }
+                ul.append(msg_new);
              },
              complete: function(){
                  get_msg();
@@ -149,54 +167,18 @@
          });
     }
 
-    function spread(){
-        let text=$("tbody:first");//定义第一个tr内容
-        let clear;//定义需要清除动画的部分
-        text.hover(function(){
-            clearInterval(clear);//鼠标悬停，清除动画，停止滚动
-        },function(){
-            clear=setInterval(function(){
-                let field=text.find("tr:first");//获取第一个tr内容
-                let high=field.height();//获取需要滚动的高度
-                text.animate({ marginTop:-high+"px"},600,function(){
-                    //隐藏第一行
-                    field.css("marginTop",0).appendTo(text);
-                    //将该行的margin值置零,然后插入到最后
-                    text.css("marginTop",0);
-                })
-            },1000)//滚动间隔时间
-        }).trigger("mouseleave");//自动滚动
-
-    };
+    function init_loan(){
+        $('#myModal').modal('hide');
+        log_in();
+    }
 
     $(function(){
-        //spread();
-        String.prototype.format = function(args) {
-            var result = this;
-            if (arguments.length > 0) {
-                if (arguments.length == 1 && typeof (args) == "object") {
-                    for (var key in args) {
-                        if(args[key]!=undefined){
-                            var reg = new RegExp("({" + key + "})", "g");
-                            result = result.replace(reg, args[key]);
-                        }
-                    }
-                }
-                else {
-                    for (var i = 0; i < arguments.length; i++) {
-                        if (arguments[i] != undefined) {
-                            var reg= new RegExp("({)" + i + "(})", "g");
-                            result = result.replace(reg, arguments[i]);
-                        }
-                    }
-                }
-            }
-            return result;
-        }
 
-        log_in();
     });
 
+    window.onload = function () {
+        init_loan();
+    }
 
 
     $("#login_btn").click(function () {
@@ -206,7 +188,7 @@
              data: "",
              dataType: "text",
              success: function(data) {
-                 if (data != '200')
+                 if (data !== '200')
                      setTimeout("log_in()", 1000);
                  else{
                      alert('login success ...get msg ...');

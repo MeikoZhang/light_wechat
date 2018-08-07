@@ -1,5 +1,3 @@
-from django.test import TestCase
-
 # Create your tests here.
 import itchat
 import time
@@ -7,32 +5,42 @@ import sys
 from itchat.content import *
 import os
 import json
-from queue import Queue
+from django_web.Logger import logger
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-picDir = os.path.join(BASE_DIR,'static\wx_files\qrcode.jpg')
-loginDir = os.path.join(BASE_DIR,'static\wx_files\itchat.pkl')
+# 验证码存储路径
+qrCode_dir = os.path.join(BASE_DIR, 'static\wx_login\qrcode.jpg')
+# 登陆信息存储目录
+login_status_dir = os.path.join(BASE_DIR, 'static\wx_login\itchat.pkl')
+# 微信图片/文件存放目录
+wx_files_dir = os.path.join(BASE_DIR, 'static\wx_files')
 
-q = Queue(maxsize=100)
 
 if_login = False
 if_run = False
-qr_uuid = None
 
 
-def login(if_login):
+def login_callback():
+    global if_login
     if_login = True
+    logger.info("登陆成功 ...")
 
 
-def logout(self, if_run):
-    self.logout = False
-    if_run = True
+def exit_callback():
+    global if_login
+    if_login = False
+    logger.info("程序已登出 ...")
 
 
-def qrcb(uuid=None, status=None, qrcode=None):
-    with open(picDir, 'wb') as f:
-        f.write(qrcode)
+uuid_last_received = None
+
+
+def qr_callback(uuid=None, status=None, qrcode=None):
+    if uuid_last_received is None or uuid != uuid_last_received:
+        logger.info("二维码获取及存储 ...uuid:%s status:%s qrcode:%s" % (uuid, status,qrcode))
+        with open(qrCode_dir, 'wb') as f:
+            f.write(qrcode)
 
 
 def output_info(msg):
@@ -112,7 +120,6 @@ def login():
     @itchat.msg_register(TEXT)
     def text_reply(msg):
         # print(json.dumps(msg))
-        q.put(msg)
         fromuser = itchat.search_friends(userName=msg['FromUserName'])['NickName']
         print(itchat.search_friends(userName=msg['ToUserName']))
         touser = itchat.search_friends(userName=msg['ToUserName'])['NickName']
@@ -157,4 +164,25 @@ def login():
     #     msgtext = queuemsg['Text']
     #     print('msg from queue ... time:%s from:%s  to: %s  content:%s' % (msgtime, fromuser, touser, msgtext))
 
-login()
+
+# 消息注册 好友消息
+@itchat.msg_register(TEXT)
+def text_reply(msg):
+    # print(json.dumps(msg))
+    fromuser = itchat.search_friends(userName=msg['FromUserName'])['NickName']
+    print(itchat.search_friends(userName=msg['ToUserName']))
+    touser = itchat.search_friends(userName=msg['ToUserName'])['NickName']
+    msgtime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(msg.createTime))
+    msgtext = msg['Text']
+    print('time:%s from:%s  to: %s  content:%s' % (msgtime, fromuser, touser, msgtext))
+
+
+print(itchat.get_QRuuid())
+# hotReload=False, statusStorageDir='itchat.pkl',
+#             enableCmdQR=False, picDir=None, qrCallback=None,
+#             loginCallback=None, exitCallback=None
+itchat.auto_login(hotReload=True, statusStorageDir=login_status_dir,
+                  enableCmdQR=False, picDir=qrCode_dir,
+                  qrCallback=qr_callback, loginCallback=login_callback, exitCallback=exit_callback)
+print('over')
+itchat.run()
