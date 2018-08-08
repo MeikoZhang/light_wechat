@@ -10,6 +10,8 @@ from django_web.Logger import logger
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # 验证码存储路径
 qrCode_dir = os.path.join(BASE_DIR, 'static\wx_login\qrcode.jpg')
+if os.path.exists(qrCode_dir):
+    os.remove(qrCode_dir)
 # 登陆信息存储目录
 login_status_dir = os.path.join(BASE_DIR, 'static\wx_login\itchat.pkl')
 # 微信图片/文件存放目录
@@ -19,12 +21,17 @@ q = Queue(maxsize=100)
 
 if_login = False
 qruuid = None
+head_img = None
+
+load_user = None
 
 
 def login_callback():
     global if_login
     if_login = True
     logger.info("登陆成功 ...")
+    global load_user
+    load_user = itchat.search_friends()
 
 
 def exit_callback():
@@ -35,9 +42,12 @@ def exit_callback():
 
 def qr_callback(uuid=None, status=None, qrcode=None):
     logger.info("二维码获取及存储 ...uuid:%s status:%s" % (uuid, status))
-    logger.info("uuid")
     with open(qrCode_dir, 'wb') as f:
         f.write(qrcode)
+    # qruuid = uuid
+    # logger.info("qr_callback uuid:%s" % (uuid))
+    # global qruuid
+    # if qruuid != uuid:
 
 
 def get_qr():
@@ -278,6 +288,7 @@ def auto_login():
     print('thread_auto_login start')
     threading.Thread(target=thread_auto_login).start()
     print('thread_auto_login over')
+    itchat.web_init
 
 
 def login_status():

@@ -26,32 +26,43 @@
 
 <div class="main-content">
     <h2>Article</h2>
-    <img id="qrcode" src="/static/wx_login/qrcode.jpg" alt="二维码" width="400px">
+    <div class="row">
+        <div class="col-xs-12 col-md-6">
+            <div class="thumbnail">
+                <img id="qrcode" src="/static/wx_login/qrcode.jpg" alt="二维码" width="400px">
+                <img id="headimg" src="" alt="二维码" width="400px">
+                <div class="caption">
+                    <button id="change_img" onclick="change_img()">检查是否登陆中</button>
+                    <button id="login_status" onclick="login_status()">检查是否登陆中</button>
+                    <button id="refresh_qrcode" onclick="refresh_qrcode()">刷新二维码</button>
+                    <button id="login" onclick="login()">登陆</button>
+                    <button id="logout" onclick="logout()">登出</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-xs-12 col-md-6">
+            <div class="thumbnail">
+                <label>消息列表</label>
+                <ul id="msglist" class="list-group">
+                    <li class="list-group-item">A</li>
+                    <li class="list-group-item">B</li>
+                    <li class="list-group-item">C</li>
+                    <li class="list-group-item">D</li>
+                    <li class="list-group-item">E</li>
+                </ul>
+            </div>
+        </div>
+    </div>
 
-    <button id="login_status" onclick="login_status()">检查是否登陆中</button>
-    <button id="refresh_qrcode" onclick="refresh_qrcode()">刷新二维码</button>
-    <button id="login" onclick="login()">登陆</button>
-    <button id="logout" onclick="logout()">登出</button>
+
 </div>
 
 </body>
 <script type="text/javascript">
 
-    login_status=function () {
-        $.ajax({
-             type: "GET",
-             url: "http://127.0.0.1:8000/login_status/",
-             data: "",
-             dataType: "text",
-             success: function(data) {
-                alert(data);
-             }
-         });
-    }
-
     refresh_qrcode=function () {
         $("#qrcode").attr("src","/static/wx_login/qrcode.jpg?"+Math.random());
-    }
+    };
 
     login=function(){
         $.ajax({
@@ -63,7 +74,30 @@
                 alert(data);
              }
          });
-    }
+    };
+
+    login_status=function () {
+        var if_login = false;
+        $.ajax({
+             type: "GET",
+             url: "http://127.0.0.1:8000/login_status/",
+             data: "",
+             dataType: "text",
+             async: false,
+             success: function(data) {
+                 if(data === 'True')
+                    if_login = true;
+                 else
+                     if_login = false;
+             },
+             complete: function () {
+                 refresh_qrcode();
+                 if(!if_login){
+                    setTimeout("login_status()", 2000);
+                }
+             }
+         });
+    };
 
     logout=function(){
         $.ajax({
@@ -75,7 +109,13 @@
                 alert(data);
              }
          });
-    }
+    };
+
+    $(function(){
+        alert("load");
+    　　login_status();
+        alert("load success");
+    });
 
 </script>
 

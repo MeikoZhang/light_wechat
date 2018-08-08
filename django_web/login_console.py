@@ -25,6 +25,8 @@ def login_callback():
     global if_login
     if_login = True
     logger.info("登陆成功 ...")
+    load_user = itchat.search_friends()
+    logger.info(json.dumps(load_user))
 
 
 def exit_callback():
@@ -37,10 +39,13 @@ uuid_last_received = None
 
 
 def qr_callback(uuid=None, status=None, qrcode=None):
-    if uuid_last_received is None or uuid != uuid_last_received:
-        logger.info("二维码获取及存储 ...uuid:%s status:%s qrcode:%s" % (uuid, status,qrcode))
+    logger.info("qr_callback uuid:%s" % (uuid))
+    global uuid_last_received
+    if uuid_last_received != uuid:
+        logger.info("二维码获取及存储 ...uuid:%s status:%s" % (uuid, status))
         with open(qrCode_dir, 'wb') as f:
             f.write(qrcode)
+            uuid_last_received = uuid
 
 
 def output_info(msg):
@@ -184,7 +189,7 @@ def text_reply(msg):
 #             loginCallback=None, exitCallback=None
 
 
-itchat.auto_login(hotReload=True, statusStorageDir=login_status_dir,picDir=qrCode_dir,
+itchat.auto_login(hotReload=True, statusStorageDir=login_status_dir, picDir=qrCode_dir,
                   # qrCallback=qr_callback,
                   loginCallback=login_callback, exitCallback=exit_callback)
 print('over')
@@ -198,5 +203,5 @@ print('over')
 #                   loginCallback=login_callback, exitCallback=exit_callback)
 # print('re login over')
 
-itchat.run(debug=True, blockThread=False)
+itchat.run()
 print('run over')
